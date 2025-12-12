@@ -38,7 +38,9 @@ st.markdown("""
 ARQUIVO_CONFIG = "config_financeiro.json"
 
 # --- DADOS INICIAIS ---
+# --- DADOS INICIAIS ---
 DEFAULT_TERMOS_INTERNOS = [
+    # Investimentos / Poupança
     {'Termo': 'RESG', 'Tipo': 'Investimento'},
     {'Termo': 'RESGATE', 'Tipo': 'Investimento'},
     {'Termo': 'APLIC', 'Tipo': 'Investimento'},
@@ -46,27 +48,105 @@ DEFAULT_TERMOS_INTERNOS = [
     {'Termo': 'INVEST', 'Tipo': 'Investimento'},
     {'Termo': 'POUP', 'Tipo': 'Poupança'},
     {'Termo': 'CDB', 'Tipo': 'Investimento'},
+    {'Termo': 'LCI', 'Tipo': 'Investimento'},
+    {'Termo': 'LCA', 'Tipo': 'Investimento'},
     {'Termo': 'TESOURO', 'Tipo': 'Investimento'},
+    {'Termo': 'FUNDO', 'Tipo': 'Investimento'},
+    
+    # Transferências entre contas do mesmo titular
     {'Termo': 'TRANSF CONT', 'Tipo': 'Transferência'},
     {'Termo': 'ENTRE CONTAS', 'Tipo': 'Transferência'},
+    {'Termo': 'MESMA TITUL', 'Tipo': 'Transferência'},
     {'Termo': 'AUTOMATICO', 'Tipo': 'Transferência'},
-    {'Termo': 'NOME', 'Tipo': 'Pessoal'}
+    
+    # Pagamento de Fatura (Geralmente neutro na conta corrente)
+    {'Termo': 'PAG FATURA', 'Tipo': 'Pagamento Cartão'},
+    {'Termo': 'PGTO FAT', 'Tipo': 'Pagamento Cartão'},
+    {'Termo': 'PAG CARTAO', 'Tipo': 'Pagamento Cartão'},
+    {'Termo': 'DEBITO AUT', 'Tipo': 'Débito Automático'}
 ]
 
 DEFAULT_REGRAS = [
+    # Transporte
     {'Palavra_Chave': 'UBER', 'Categoria': 'Transporte'},
     {'Palavra_Chave': '99POP', 'Categoria': 'Transporte'},
+    {'Palavra_Chave': '99APP', 'Categoria': 'Transporte'},
     {'Palavra_Chave': 'POSTO', 'Categoria': 'Transporte'},
+    {'Palavra_Chave': 'IPIRANGA', 'Categoria': 'Transporte'},
+    {'Palavra_Chave': 'SHELL', 'Categoria': 'Transporte'},
+    {'Palavra_Chave': 'PETROBRAS', 'Categoria': 'Transporte'},
+    {'Palavra_Chave': 'SEM PARAR', 'Categoria': 'Transporte'},
+    {'Palavra_Chave': 'VELOE', 'Categoria': 'Transporte'},
+    {'Palavra_Chave': 'ESTACIONAMENTO', 'Categoria': 'Transporte'},
+
+    # Alimentação
     {'Palavra_Chave': 'IFOOD', 'Categoria': 'Alimentação'},
+    {'Palavra_Chave': 'RAPPI', 'Categoria': 'Alimentação'},
+    {'Palavra_Chave': 'ZE DELIVERY', 'Categoria': 'Alimentação'},
     {'Palavra_Chave': 'RESTAURANTE', 'Categoria': 'Alimentação'},
+    {'Palavra_Chave': 'PADARIA', 'Categoria': 'Alimentação'},
+    {'Palavra_Chave': 'BURGER', 'Categoria': 'Alimentação'},
+    {'Palavra_Chave': 'MC DONALDS', 'Categoria': 'Alimentação'},
+    
+    # Mercado
     {'Palavra_Chave': 'MERCADO', 'Categoria': 'Mercado'},
+    {'Palavra_Chave': 'SUPERMERCADO', 'Categoria': 'Mercado'},
     {'Palavra_Chave': 'ATACADAO', 'Categoria': 'Mercado'},
+    {'Palavra_Chave': 'ASSAI', 'Categoria': 'Mercado'},
+    {'Palavra_Chave': 'CARREFOUR', 'Categoria': 'Mercado'},
+    {'Palavra_Chave': 'PAO DE ACUCAR', 'Categoria': 'Mercado'},
+    {'Palavra_Chave': 'EXTRA', 'Categoria': 'Mercado'},
+    {'Palavra_Chave': 'DIA%', 'Categoria': 'Mercado'},
+
+    # Assinaturas e Serviços Digitais
     {'Palavra_Chave': 'NETFLIX', 'Categoria': 'Assinaturas'},
+    {'Palavra_Chave': 'SPOTIFY', 'Categoria': 'Assinaturas'},
+    {'Palavra_Chave': 'AMAZONPRIME', 'Categoria': 'Assinaturas'},
+    {'Palavra_Chave': 'PRIME VIDEO', 'Categoria': 'Assinaturas'},
+    {'Palavra_Chave': 'YOUTUBE', 'Categoria': 'Assinaturas'},
+    {'Palavra_Chave': 'APPLE', 'Categoria': 'Assinaturas'},
+    {'Palavra_Chave': 'GOOGLE', 'Categoria': 'Serviços Digitais'},
+
+    # Compras Online
+    {'Palavra_Chave': 'MERCADOLIVRE', 'Categoria': 'Compras'},
+    {'Palavra_Chave': 'MELI', 'Categoria': 'Compras'},
+    {'Palavra_Chave': 'AMAZON', 'Categoria': 'Compras'},
+    {'Palavra_Chave': 'MAGALU', 'Categoria': 'Compras'},
+    {'Palavra_Chave': 'SHOPEE', 'Categoria': 'Compras'},
+    {'Palavra_Chave': 'SHEIN', 'Categoria': 'Compras'},
+
+    # Contas Fixas
     {'Palavra_Chave': 'VIVO', 'Categoria': 'Contas Fixas'},
+    {'Palavra_Chave': 'CLARO', 'Categoria': 'Contas Fixas'},
+    {'Palavra_Chave': 'TIM', 'Categoria': 'Contas Fixas'},
+    {'Palavra_Chave': 'OI', 'Categoria': 'Contas Fixas'},
+    {'Palavra_Chave': 'ENERGIA', 'Categoria': 'Contas Fixas'},
     {'Palavra_Chave': 'LUZ', 'Categoria': 'Contas Fixas'},
+    {'Palavra_Chave': 'SANEAMENTO', 'Categoria': 'Contas Fixas'},
+    {'Palavra_Chave': 'AGUA', 'Categoria': 'Contas Fixas'},
+    {'Palavra_Chave': 'INTERNET', 'Categoria': 'Contas Fixas'},
+    {'Palavra_Chave': 'CONDOMINIO', 'Categoria': 'Moradia'},
+    {'Palavra_Chave': 'ALUGUEL', 'Categoria': 'Moradia'},
+
+    # Saúde
     {'Palavra_Chave': 'FARMACIA', 'Categoria': 'Saúde'},
+    {'Palavra_Chave': 'DROGARIA', 'Categoria': 'Saúde'},
+    {'Palavra_Chave': 'DROGASIL', 'Categoria': 'Saúde'},
+    {'Palavra_Chave': 'RAIA', 'Categoria': 'Saúde'},
+    {'Palavra_Chave': 'PAGUE MENOS', 'Categoria': 'Saúde'},
+    {'Palavra_Chave': 'ULTRAFARMA', 'Categoria': 'Saúde'},
+
+    # Bancário e Taxas
+    {'Palavra_Chave': 'TAR', 'Categoria': 'Taxas Bancárias'},
+    {'Palavra_Chave': 'TARIFA', 'Categoria': 'Taxas Bancárias'},
+    {'Palavra_Chave': 'ANUIDADE', 'Categoria': 'Taxas Bancárias'},
+    {'Palavra_Chave': 'IOF', 'Categoria': 'Impostos'},
+
+    # Receitas e Transferências
     {'Palavra_Chave': 'PIX ENVIADO', 'Categoria': 'Transferências/PIX'},
     {'Palavra_Chave': 'SALARIO', 'Categoria': 'Renda'},
+    {'Palavra_Chave': 'PROVENTOS', 'Categoria': 'Renda'},
+    {'Palavra_Chave': 'PAGTO ELETRON COBRANCA', 'Categoria': 'Renda'}, # Comum em recebimentos
     {'Palavra_Chave': 'PIX RECEBIDO', 'Categoria': 'Entradas Diversas'}
 ]
 
@@ -298,6 +378,7 @@ def main():
         💡 **Dicas:**
         * **Prioridade:** O robô busca primeiro por **Termos Internos**, depois **Entradas**, e por fim **Regras de Categoria**.
         * **Comece Simples:** Cadastre apenas os gastos recorrentes (Netflix, Escola, Mercado). O que sobrar como "Outros" no Excel você ajusta manualmente depois.
+        * **Seu Nome:** Cadastre seu nome em **Termos Internos** para não contabilizar as transferências entre contas.
         """)
 
     st.info("Arraste seus extratos bancários (OFX) abaixo.")
