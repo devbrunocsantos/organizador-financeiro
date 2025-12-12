@@ -270,7 +270,7 @@ def main():
     st.sidebar.download_button(
         label="💾 Salvar Minhas Regras",
         data=json_bytes,
-        file_name="minhas_regras_financas.json",
+        file_name=ARQUIVO_CONFIG,
         mime="application/json"
     )
 
