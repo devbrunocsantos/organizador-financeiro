@@ -29,7 +29,6 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 # --- DADOS INICIAIS (PADRÕES) ---
-# Mantendo sua lógica original como padrão, mas permitindo edição
 DEFAULT_TERMOS_INTERNOS = [
     {'Termo': 'RESG', 'Tipo': 'Investimento'},
     {'Termo': 'RESGATE', 'Tipo': 'Investimento'},
@@ -63,7 +62,6 @@ DEFAULT_REGRAS = [
 ]
 
 # --- FUNÇÕES DE LÓGICA DE NEGÓCIO ---
-
 def inicializar_session_state():
     """Gerencia o estado da sessão para persistir as regras editadas pelo usuário."""
     if 'df_regras' not in st.session_state:
@@ -111,7 +109,7 @@ def processar_arquivos(uploaded_files, df_regras, df_internos):
     for uploaded_file in uploaded_files:
         try:
             # O OfxParser precisa de um arquivo em bytes ou string, o Streamlit fornece bytes
-            # Decodificamos para garantir leitura correta (ISO-8859-1 é padrão bancário BR)
+            # Decodificado para garantir leitura correta (ISO-8859-1 é padrão bancário BR)
             content = uploaded_file.read().decode("ISO-8859-1")
             file_obj = io.StringIO(content)
             
@@ -219,7 +217,6 @@ def gerar_excel_bytes(df_final):
     return output
 
 # --- INTERFACE PRINCIPAL ---
-
 def main():
     inicializar_session_state()
 
@@ -306,4 +303,5 @@ def main():
             st.warning("Nenhuma transação válida encontrada nos arquivos.")
 
 if __name__ == "__main__":
+
     main()
