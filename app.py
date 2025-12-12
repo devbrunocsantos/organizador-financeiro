@@ -231,48 +231,48 @@ def main():
     # AQUI INSERIMOS O MANUAL DENTRO DE UM EXPANDER
     with st.expander("📘 Como usar este sistema (Clique para ler o Manual)", expanded=False):
         st.markdown("""
-                    #📘 Manual do Usuário: Organizador Financeiro
+                    ### 📘 **Manual do Usuário: Organizador Financeiro**
                     ​Bem-vindo ao Organizador Financeiro! Esta ferramenta foi criada para transformar extratos bancários confusos em relatórios Excel organizados, categorizados e coloridos automaticamente.
                     
-                    #🚀 O que você precisa antes de começar
+                    ### 🚀 **O que você precisa antes de começar**
                     - ​Para utilizar o sistema, você precisará apenas de:
                     - ​Arquivos OFX: Entre no site/app do seu banco e baixe o extrato no formato .ofx (Money/Quicken). O sistema aceita múltiplos arquivos de diferentes bancos ao mesmo tempo.
                     - ​Navegador Web: O sistema roda diretamente no seu navegador.
 
-                    #🛠️ Passo 1: Configurando suas Regras (Barra Lateral)
+                    ### 🛠️ **Passo 1: Configurando suas Regras (Barra Lateral)**
                     ​Ao abrir o aplicativo, você verá uma barra lateral à esquerda chamada ⚙️ Configurações. O sistema já vem com regras padrão, mas a mágica acontece quando você personaliza para a sua realidade.
                     
-                    - ​1. Editar Regras de Categoria
+                    - ​1. **Editar Regras de Categoria**
                         Nesta tabela, você ensina ao robô como classificar seus gastos.
-                        - ​Palavra_Chave: O termo que aparece no extrato (ex: UBER, IFOOD, POSTO).
-                        - ​Categoria: Como você quer agrupar isso (ex: Transporte, Alimentação).
-                        - ​Dica: Não precisa escrever a descrição inteira. Se o extrato mostra "UBER DO BRASIL TECNOLOGIA", basta cadastrar UBER.
+                        - **​Palavra_Chave:** O termo que aparece no extrato (ex: UBER, IFOOD, POSTO).
+                        - **​Categoria:** Como você quer agrupar isso (ex: Transporte, Alimentação).
+                        - **​Dica:** Não precisa escrever a descrição inteira. Se o extrato mostra "UBER DO BRASIL TECNOLOGIA", basta cadastrar UBER.
                     
-                    - ​2. Editar Termos Internos
+                    - ​2. **Editar Termos Internos**
                         ​Use esta tabela para transações que não são gastos nem ganhos reais, mas apenas movimentações entre suas contas. Exemplos: RESGATE, APLICACAO, TRANSF PARA MIM MESMO. 
                         ​O sistema irá marcar essas linhas em Cinza no Excel e não irá somá-las como despesa ou receita.
                     
-                    - ​3. Salvar/Carregar Configurações (Importante!) 💾
+                    - ​3. **Salvar/Carregar Configurações (Importante!)** 💾
                         ​Como o sistema roda na web, se você atualizar a página, as regras voltam ao padrão. 
                         ​Para não perder seu trabalho: Após editar as tabelas, clique em "💾 Salvar Minhas Regras". Um arquivo .json será baixado no seu computador. 
                         ​Na próxima vez: Basta arrastar esse arquivo .json para o campo "📂 Carregar Minhas Regras" no topo da barra lateral e todas as suas configurações personalizadas serão restauradas.
                     
-                    #📂 Passo 2: Processando os Extratos
+                    ### 📂 **Passo 2: Processando os Extratos**
                     ​Na área principal (central) da tela:
                     - ​Localize o campo "Arquivos OFX do Banco".
                     - ​Arraste seus arquivos .ofx para lá (ou clique para buscar nas pastas).
                     - ​O sistema processará tudo instantaneamente.
 
-                    #​O que aparece na tela?
-                    - ​Métricas: Resumo rápido de quanto entrou (Entradas), quanto saiu (Saídas) e o saldo final do período importado.
-                    - ​Tabela de Pré-visualização: Uma lista com todas as transações já categorizadas para você conferir se está tudo certo.
+                    ### ​**O que aparece na tela?**
+                    - **​Métricas:** Resumo rápido de quanto entrou (Entradas), quanto saiu (Saídas) e o saldo final do período importado.
+                    - **​Tabela de Pré-visualização:** Uma lista com todas as transações já categorizadas para você conferir se está tudo certo.
                     
-                    #📊 Passo 3: O Resultado Final (Excel)
+                    ### 📊 **Passo 3: O Resultado Final (Excel)**
                     ​Se os dados na tela estiverem corretos, clique no botão azul:
                     
-                    #👉 "📥 Baixar Planilha Excel"
+                    ### 👉 **"📥 Baixar Planilha Excel"**
                     ​O arquivo gerado conterá duas abas:
-                    - ​Aba 1: Extrato Detalhado
+                    - **​Aba 1: Extrato Detalhado**
                         - ​Todas as transações unificadas.
                         - ​Cores Automáticas:
                             - 🟢 Verde: Entradas de dinheiro.
@@ -283,10 +283,10 @@ def main():
                         - Uma tabela dinâmica somando os gastos por Categoria.
                         - ​Um Gráfico de Pizza pronto para visualização da distribuição dos seus gastos.
 
-                    #💡 Dicas
-                    - ​Prioridade das Regras: O sistema verifica primeiro se é uma "Movimentação Interna". Se não for, ele verifica se é "Entrada" (dinheiro positivo). Por fim, ele tenta achar as palavras-chave de gastos. Se não achar nada, classifica como "Outros".
-                    - ​Comece simples: Não tente cadastrar todos os estabelecimentos do mundo. Cadastre os recorrentes (Netflix, Vivo, Academia, Supermercado habitual). O que sobrar como "Outros" no Excel você pode ajustar manualmente depois.
-                    - ​Arquivos duplicados: O sistema lê o que está no arquivo. Se você subir o mesmo extrato duas vezes, ele aparecerá duplicado. Certifique-se de selecionar os arquivos corretos.
+                    ### 💡 Dicas
+                    - **​Prioridade das Regras:** O sistema verifica primeiro se é uma "Movimentação Interna". Se não for, ele verifica se é "Entrada" (dinheiro positivo). Por fim, ele tenta achar as palavras-chave de gastos. Se não achar nada, classifica como "Outros".
+                    - **​Comece simples:** Não tente cadastrar todos os estabelecimentos do mundo. Cadastre os recorrentes (Netflix, Vivo, Academia, Supermercado habitual). O que sobrar como "Outros" no Excel você pode ajustar manualmente depois.
+                    - **​Arquivos duplicados:** O sistema lê o que está no arquivo. Se você subir o mesmo extrato duas vezes, ele aparecerá duplicado. Certifique-se de selecionar os arquivos corretos.
                 """)
 
     st.info("Arraste seus extratos bancários (OFX) abaixo.")
