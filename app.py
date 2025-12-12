@@ -228,66 +228,77 @@ def main():
     # --- TÍTULO E MANUAL (NOVO) ---
     st.title("💰 Organizador Financeiro")
     
-    # AQUI INSERIMOS O MANUAL DENTRO DE UM EXPANDER
-    with st.expander("📘 Como usar este sistema (Clique para ler o Manual)", expanded=False):
+    # MANUAL
+    with st.expander("📘 Manual de Instruções: Clique aqui para começar", expanded=False):
+    
+        st.markdown("### 🎯 Objetivo do Sistema")
+        st.markdown("Esta ferramenta converte o extrato do seu banco em uma planilha Excel organizada. Ela separa seus gastos por categorias (como Transporte, Mercado, Lazer) e colore as linhas automaticamente.")
+        
+        st.markdown("---")
+
+        st.info("""
+        ### 1️⃣ Passo Principal: Como baixar o Extrato (Arquivo OFX)
+        Para o sistema funcionar, você precisa do extrato no formato **OFX** (dependendo do banco pode aparecer como Money ou Quicken).
+        ⚠️ **Atenção:** Arquivos em **PDF** ou **Prints de tela** não funcionam.
+        
+        **Como conseguir o arquivo:**
+        
+        **📱 Pelo Aplicativo do Celular:**
+        1. Abra o app do seu banco e vá em **Extrato**.
+        2. Procure por botões como **"Exportar"**, **"Salvar"** ou o ícone de **Compartilhar**.
+        3. Escolha o formato **OFX**.
+        4. Salve o arquivo ou envie para seu próprio e-mail/computador.
+        *(Nota: Se o seu app só oferecer PDF, será necessário acessar sua conta pelo site no computador).*
+        
+        **💻 Pelo Site (Internet Banking):**
+        1. Acesse sua conta e vá em **Extrato**.
+        2. Selecione o período e procure o botão **"Salvar em Arquivo"** ou **"Exportar"**.
+        3. Escolha a opção **OFX**.
+        """)
+
+        st.markdown("### 2️⃣ Configuração (Menu Lateral)")
         st.markdown("""
-                    ### 📘 **Manual do Usuário: Organizador Financeiro**
-                    ​Bem-vindo ao Organizador Financeiro! Esta ferramenta foi criada para transformar extratos bancários confusos em relatórios Excel organizados, categorizados e coloridos automaticamente.
-                    
-                    ### 🚀 **O que você precisa antes de começar**
-                    - ​Para utilizar o sistema, você precisará apenas de:
-                    - ​Arquivos OFX: Entre no site/app do seu banco e baixe o extrato no formato .ofx (Money/Quicken). O sistema aceita múltiplos arquivos de diferentes bancos ao mesmo tempo.
-                    - ​Navegador Web: O sistema roda diretamente no seu navegador.
+        Antes de processar o extrato, defina as regras no menu à esquerda para o sistema saber como organizar seus gastos.
+        
+        **A. Tabela de Categorias**
+        * **Coluna Palavra_Chave:** Digite uma parte do nome que aparece no extrato (Ex: `UBER`, `NETFLIX`, `SPOTIFY`).
+        * **Coluna Categoria:** Digite o tipo desse gasto (Ex: `Transporte`, `Assinaturas`, `Mercado`).
+        
+        **B. Termos Internos (Ignorar)**
+        * Use esta lista para transações que não são gastos reais (ex: pagamento de fatura de cartão, transferências para poupança, investimentos). O sistema não somará esses valores como entrada ou saída.
+        """)
 
-                    ### 🛠️ **Passo 1: Configurando suas Regras (Barra Lateral)**
-                    ​Ao abrir o aplicativo, você verá uma barra lateral à esquerda chamada ⚙️ Configurações. O sistema já vem com regras padrão, mas a mágica acontece quando você personaliza para a sua realidade.
-                    
-                    - ​1. **Editar Regras de Categoria**
-                        Nesta tabela, você ensina ao robô como classificar seus gastos.
-                        - **​Palavra_Chave:** O termo que aparece no extrato (ex: UBER, IFOOD, POSTO).
-                        - **​Categoria:** Como você quer agrupar isso (ex: Transporte, Alimentação).
-                        - **​Dica:** Não precisa escrever a descrição inteira. Se o extrato mostra "UBER DO BRASIL TECNOLOGIA", basta cadastrar UBER.
-                    
-                    - ​2. **Editar Termos Internos**
-                        ​Use esta tabela para transações que não são gastos nem ganhos reais, mas apenas movimentações entre suas contas. Exemplos: RESGATE, APLICACAO, TRANSF PARA MIM MESMO. 
-                        ​O sistema irá marcar essas linhas em Cinza no Excel e não irá somá-las como despesa ou receita.
-                    
-                    - ​3. **Salvar/Carregar Configurações (Importante!)** 💾
-                        ​Como o sistema roda na web, se você atualizar a página, as regras voltam ao padrão. 
-                        ​Para não perder seu trabalho: Após editar as tabelas, clique em "💾 Salvar Minhas Regras". Um arquivo .json será baixado no seu computador. 
-                        ​Na próxima vez: Basta arrastar esse arquivo .json para o campo "📂 Carregar Minhas Regras" no topo da barra lateral e todas as suas configurações personalizadas serão restauradas.
-                    
-                    ### 📂 **Passo 2: Processando os Extratos**
-                    ​Na área principal (central) da tela:
-                    - ​Localize o campo "Arquivos OFX do Banco".
-                    - ​Arraste seus arquivos .ofx para lá (ou clique para buscar nas pastas).
-                    - ​O sistema processará tudo instantaneamente.
+        st.warning("""
+        💾 **IMPORTANTE: Salvar suas Regras**
+        
+        Se você atualizar a página, as regras definidas serão perdidas.
+        1.  Após configurar, clique no botão **"💾 Salvar Minhas Regras"** (menu lateral).
+        2.  Um arquivo de segurança será baixado.
+        3.  Sempre que voltar a usar o sistema, arraste esse arquivo para a área **"📂 Carregar Minhas Regras"** para restaurar tudo.
+        """)
 
-                    ### ​**O que aparece na tela?**
-                    - **​Métricas:** Resumo rápido de quanto entrou (Entradas), quanto saiu (Saídas) e o saldo final do período importado.
-                    - **​Tabela de Pré-visualização:** Uma lista com todas as transações já categorizadas para você conferir se está tudo certo.
-                    
-                    ### 📊 **Passo 3: O Resultado Final (Excel)**
-                    ​Se os dados na tela estiverem corretos, clique no botão azul:
-                    
-                    ### 👉 **"📥 Baixar Planilha Excel"**
-                    ​O arquivo gerado conterá duas abas:
-                    - **​Aba 1: Extrato Detalhado**
-                        - ​Todas as transações unificadas.
-                        - ​Cores Automáticas:
-                            - 🟢 Verde: Entradas de dinheiro.
-                            - 🔴 Vermelho: Saídas/Gastos.
-                            - ​⚪ Cinza: Movimentações internas (neutras).
-                
-                    - ​Aba 2: Resumo Gerencial
-                        - Uma tabela dinâmica somando os gastos por Categoria.
-                        - ​Um Gráfico de Pizza pronto para visualização da distribuição dos seus gastos.
+        st.markdown("---")
 
-                    ### 💡 Dicas
-                    - **​Prioridade das Regras:** O sistema verifica primeiro se é uma "Movimentação Interna". Se não for, ele verifica se é "Entrada" (dinheiro positivo). Por fim, ele tenta achar as palavras-chave de gastos. Se não achar nada, classifica como "Outros".
-                    - **​Comece simples:** Não tente cadastrar todos os estabelecimentos do mundo. Cadastre os recorrentes (Netflix, Vivo, Academia, Supermercado habitual). O que sobrar como "Outros" no Excel você pode ajustar manualmente depois.
-                    - **​Arquivos duplicados:** O sistema lê o que está no arquivo. Se você subir o mesmo extrato duas vezes, ele aparecerá duplicado. Certifique-se de selecionar os arquivos corretos.
-                """)
+        st.markdown("### 3️⃣ Gerando o Relatório")
+        st.markdown("""
+        1.  Localize a área **"Arquivos OFX do Banco"** no centro da tela.
+        2.  Clique no botão **"Browse files"** e selecione os arquivos OFX que você baixou.
+        3.  Confira a pré-visualização e, se estiver tudo certo, clique no botão azul **"📥 Baixar Planilha Excel"**.
+        """)
+        
+        st.markdown("### 4️⃣ Legenda do Excel")
+        st.markdown("""
+        * 🟢 **Verde:** Entradas de dinheiro.
+        * 🔴 **Vermelho:** Saídas e Gastos.
+        * ⚪ **Cinza:** Transações ignoradas (Termos Internos).
+        """)
+
+        # Bloco Verde: Dicas Finais
+        st.success("""
+        💡 **Dicas:**
+        * **Prioridade:** O robô busca primeiro por **Termos Internos**, depois **Entradas**, e por fim **Regras de Categoria**.
+        * **Comece Simples:** Cadastre apenas os gastos recorrentes (Netflix, Escola, Mercado). O que sobrar como "Outros" no Excel você ajusta manualmente depois.
+        """)
 
     st.info("Arraste seus extratos bancários (OFX) abaixo.")
 
