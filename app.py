@@ -72,53 +72,16 @@ DEFAULT_REGRAS = [
 ]
 
 # --- FUNÇÕES DE PERSISTÊNCIA E LÓGICA DE NEGÓCIO ---
-
-def carregar_dados_unicos():
-    """
-    Lê o arquivo JSON único que contém tanto as regras quanto os termos internos.
-    Se o arquivo não existir ou estiver corrompido, retorna os DataFrames padrão.
-    """
-    if os.path.exists(ARQUIVO_CONFIG):
-        try:
-            with open(ARQUIVO_CONFIG, 'r', encoding='utf-8') as f:
-                dados = json.load(f)
-            
-            # Recupera as chaves, se existirem, senão usa padrão
-            regras_data = dados.get('regras', DEFAULT_REGRAS)
-            internos_data = dados.get('termos_internos', DEFAULT_TERMOS_INTERNOS)
-            
-            return pd.DataFrame(regras_data), pd.DataFrame(internos_data)
-        except Exception as e:
-            st.warning(f"Erro ao ler arquivo de configuração ({e}). Usando padrões.")
-            return pd.DataFrame(DEFAULT_REGRAS), pd.DataFrame(DEFAULT_TERMOS_INTERNOS)
-    else:
-        return pd.DataFrame(DEFAULT_REGRAS), pd.DataFrame(DEFAULT_TERMOS_INTERNOS)
-
-def salvar_dados_unicos(df_regras, df_internos):
-    """
-    Salva ambos os DataFrames em um único arquivo JSON estruturado.
-    """
+def carregar_configuracoes(arquivo_json):
+    """Carrega as regras salvas pelo usuário"""
     try:
-        dados = {
-            "regras": df_regras.to_dict(orient='records'),
-            "termos_internos": df_internos.to_dict(orient='records')
-        }
-        
-        with open(ARQUIVO_CONFIG, 'w', encoding='utf-8') as f:
-            json.dump(dados, f, indent=4, ensure_ascii=False)
-            
-        return True, "Configurações salvas com sucesso!"
+        dados = json.load(arquivo_json)
+        df_regras = pd.DataFrame(dados.get('regras', DEFAULT_REGRAS))
+        df_internos = pd.DataFrame(dados.get('internos', DEFAULT_TERMOS_INTERNOS))
+        return df_regras, df_internos
     except Exception as e:
-        return False, f"Erro ao salvar: {e}"
-
-def inicializar_session_state():
-    """
-    Inicializa o estado da sessão carregando os dados do arquivo único.
-    """
-    if 'df_regras' not in st.session_state or 'df_internos' not in st.session_state:
-        df_regras, df_internos = carregar_dados_unicos()
-        st.session_state['df_regras'] = df_regras
-        st.session_state['df_internos'] = df_internos
+        st.error(f"Erro ao carregar arquivo de configuração: {e}")
+        return None, None
 
 def categorizar(descricao, valor, df_regras, df_internos):
     """
@@ -267,106 +230,79 @@ def gerar_excel_bytes(df_final):
     return output
 
 # --- INTERFACE PRINCIPAL ---
-
 def main():
-    inicializar_session_state()
+    st.sidebar.title("⚙️ Configurações")
 
-    # --- SIDEBAR: CONFIGURAÇÕES ---
-    with st.sidebar:
-        st.header("⚙️ Configurações")
-        st.info("Edite as tabelas e clique em 'Salvar Alterações' para persistir os dados.")
-        
-        with st.expander("📝 Regras de Categoria", expanded=False):
-            st.caption("Associe palavras-chave a categorias.")
-            regras_editadas = st.data_editor(
-                st.session_state['df_regras'], 
-                num_rows="dynamic",
-                key="editor_regras"
-            )
+    # 1. CARREGAR CONFIGURAÇÃO EXISTENTE
+    config_file = st.sidebar.file_uploader("📂 Carregar Minhas Regras (Opcional)", type=['json'])
+    
+    # Inicializa ou atualiza o estado
+    if 'df_regras' not in st.session_state:
+        st.session_state['df_regras'] = pd.DataFrame(DEFAULT_REGRAS)
+        st.session_state['df_internos'] = pd.DataFrame(DEFAULT_TERMOS_INTERNOS)
+    
+    if config_file is not None:
+        # Se o usuário subiu um arquivo JSON, atualiza os dados
+        regras, internos = carregar_configuracoes(config_file)
+        if regras is not None:
+            st.session_state['df_regras'] = regras
+            st.session_state['df_internos'] = internos
+            st.sidebar.success("Regras carregadas!")
 
-        with st.expander("🔄 Termos Internos (Ignorar)", expanded=False):
-            st.caption("Termos que indicam transferências entre suas próprias contas.")
-            internos_editados = st.data_editor(
-                st.session_state['df_internos'], 
-                num_rows="dynamic",
-                key="editor_internos"
-            )
+    # 2. EDITORES
+    with st.sidebar.expander("📝 Editar Regras de Categoria", expanded=False):
+        st.session_state['df_regras'] = st.data_editor(st.session_state['df_regras'], num_rows="dynamic")
 
-        # Botão de Salvar Manual
-        st.write("---")
-        if st.button("💾 Salvar Alterações"):
-            # Atualiza o session_state com o que está nos editores
-            st.session_state['df_regras'] = regras_editadas
-            st.session_state['df_internos'] = internos_editados
-            
-            # Chama a função para gravar no arquivo JSON
-            sucesso, mensagem = salvar_dados_unicos(regras_editadas, internos_editados)
-            
-            if sucesso:
-                st.success(mensagem)
-            else:
-                st.error(mensagem)
+    with st.sidebar.expander("🔄 Editar Termos Internos", expanded=False):
+        st.session_state['df_internos'] = st.data_editor(st.session_state['df_internos'], num_rows="dynamic")
 
-    # --- ÁREA PRINCIPAL ---
-    st.title("📊 Organizador Financeiro Pessoal")
-    st.write("Transforme seus extratos bancários (OFX) em uma planilha organizada e visual.")
-
-    # 1. Upload
-    uploaded_files = st.file_uploader(
-        "Arraste seus arquivos OFX aqui", 
-        type=['ofx'], 
-        accept_multiple_files=True,
-        help="Você pode selecionar múltiplos arquivos de bancos diferentes."
+    # 3. BOTÃO DE SALVAR (EXPORTAR)
+    st.sidebar.markdown("---")
+    st.sidebar.write("Gostou das regras? Salve para usar depois:")
+    
+    # Prepara o JSON para download
+    dados_para_salvar = {
+        'regras': st.session_state['df_regras'].to_dict(orient='records'),
+        'internos': st.session_state['df_internos'].to_dict(orient='records')
+    }
+    json_bytes = json.dumps(dados_para_salvar, indent=4).encode('utf-8')
+    
+    st.sidebar.download_button(
+        label="💾 Salvar Minhas Regras",
+        data=json_bytes,
+        file_name="minhas_regras_financas.json",
+        mime="application/json"
     )
 
+    # --- ÁREA PRINCIPAL ---
+    st.title("💰 Organizador Financeiro")
+    st.info("Arraste seus extratos bancários (OFX) e, opcionalmente, seu arquivo de regras salvo na barra lateral.")
+
+    uploaded_files = st.file_uploader("Arquivos OFX do Banco", type=['ofx'], accept_multiple_files=True)
+
     if uploaded_files:
-        with st.spinner('Processando extratos...'):
-            # Processamento usa os DataFrames que estão no estado (ou acabaram de ser salvos)
-            df = processar_arquivos(
-                uploaded_files, 
-                st.session_state['df_regras'], 
-                st.session_state['df_internos']
-            )
-
+        df = processar_arquivos(uploaded_files, st.session_state['df_regras'], st.session_state['df_internos'])
+        
         if not df.empty:
-            # 2. Prévia dos Dados
-            st.success(f"{len(df)} transações processadas com sucesso!")
-            
-            # Cards de Resumo Rápido na Tela
+            # Métricas
+            ent = df[df['Tipo']=='Entrada']['Valor'].sum()
+            sai = df[df['Tipo']=='Saída']['Valor'].sum()
             col1, col2, col3 = st.columns(3)
-            entrada = df[df['Tipo'] == 'Entrada']['Valor'].sum()
-            saida = df[df['Tipo'] == 'Saída']['Valor'].sum()
-            
-            col1.metric("Total Entradas", f"R$ {entrada:,.2f}")
-            col2.metric("Total Saídas", f"R$ {saida:,.2f}", delta_color="inverse")
-            col3.metric("Saldo do Período", f"R$ {entrada + saida:,.2f}")
+            col1.metric("Entradas", f"R$ {ent:,.2f}")
+            col2.metric("Saídas", f"R$ {sai:,.2f}")
+            col3.metric("Saldo", f"R$ {ent+sai:,.2f}")
 
-            # Aba de visualização simples
-            tab1, tab2 = st.tabs(["📋 Tabela Detalhada", "📈 Gráfico Rápido"])
-            
-            with tab1:
-                st.dataframe(df.style.format(subset=['Valor'], formatter="R$ {:.2f}"), use_container_width=True)
-            
-            with tab2:
-                df_chart = df[df['Tipo'] == 'Saída'].groupby('Categoria')['Valor'].sum().abs().reset_index()
-                st.bar_chart(df_chart, x='Categoria', y='Valor')
+            # Visualização
+            st.dataframe(df, use_container_width=True)
 
-            # 3. Botão de Download
-            st.markdown("---")
-            st.subheader("📥 Baixar Relatório Completo")
-            
-            excel_data = gerar_excel_bytes(df)
-            file_name = f"Controle_Financeiro_{datetime.now().strftime('%Y-%m-%d')}.xlsx"
-            
+            # Download Excel
             st.download_button(
-                label="Baixar Excel Formatado",
-                data=excel_data,
-                file_name=file_name,
+                "📥 Baixar Planilha Excel",
+                data=gerar_excel(df),
+                file_name=f"Financas_{datetime.now().strftime('%Y-%m-%d')}.xlsx",
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 type="primary"
             )
-        else:
-            st.warning("Nenhuma transação válida encontrada nos arquivos.")
 
 if __name__ == "__main__":
     main()
