@@ -298,7 +298,7 @@ def main():
             # Download Excel
             st.download_button(
                 "📥 Baixar Planilha Excel",
-                data=gerar_excel(df),
+                data=gerar_excel_bytes(df),
                 file_name=f"Financas_{datetime.now().strftime('%Y-%m-%d')}.xlsx",
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 type="primary"
