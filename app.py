@@ -215,6 +215,8 @@ def processar_arquivos(uploaded_files, df_regras, df_internos):
 
 def gerar_excel_bytes(df_final):
     output = io.BytesIO()
+    
+    # Prepara o resumo
     df_resumo = df_final.groupby('Categoria')['Valor'].sum().reset_index().sort_values(by='Valor', ascending=True)
 
     with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
@@ -225,19 +227,36 @@ def gerar_excel_bytes(df_final):
         ws_extrato = writer.sheets['Extrato Detalhado']
         ws_resumo = writer.sheets['Resumo Gerencial']
 
+        # --- FORMATOS ---
         fmt_moeda = workbook.add_format({'num_format': 'R$ #,##0.00'})
         fmt_verm = workbook.add_format({'font_color': '#9C0006', 'bg_color': '#FFC7CE', 'num_format': 'R$ #,##0.00'})
         fmt_verd = workbook.add_format({'font_color': '#006100', 'bg_color': '#C6EFCE', 'num_format': 'R$ #,##0.00'})
         fmt_neutro = workbook.add_format({'font_color': '#333333', 'bg_color': '#E0E0E0', 'num_format': 'R$ #,##0.00'})
         
-        ws_extrato.set_column('A:Z', 20)
-        ws_resumo.set_column('A:Z', 20)
-        
-        idx_v_ext = df_final.columns.get_loc('Valor')
-        ws_extrato.set_column(idx_v_ext, idx_v_ext, 18, fmt_moeda)
-        idx_v_res = df_resumo.columns.get_loc('Valor')
-        ws_resumo.set_column(idx_v_res, idx_v_res, 18, fmt_moeda)
+        # --- AUTO-AJUSTE DAS COLUNAS (ABAS EXTRATO) ---
+        for idx, col in enumerate(df_final.columns):
+            # Tamanho máximo do texto na coluna
+            max_len = df_final[col].astype(str).map(len).max()
+            # Tamanho do cabeçalho
+            max_len = max(max_len, len(col)) + 2
+            # Se for coluna de Valor, garante um tamanho mínimo para caber R$
+            if 'Valor' in col:
+                max_len = max(max_len, 18)
+                ws_extrato.set_column(idx, idx, max_len, fmt_moeda)
+            else:
+                ws_extrato.set_column(idx, idx, max_len)
 
+        # --- AUTO-AJUSTE DAS COLUNAS (ABA RESUMO) ---
+        for idx, col in enumerate(df_resumo.columns):
+            max_len = df_resumo[col].astype(str).map(len).max()
+            max_len = max(max_len, len(col)) + 2
+            if 'Valor' in col:
+                max_len = max(max_len, 18)
+                ws_resumo.set_column(idx, idx, max_len, fmt_moeda)
+            else:
+                ws_resumo.set_column(idx, idx, max_len)
+
+        # --- TABELAS E FORMATAÇÃO CONDICIONAL ---
         (max_row, max_col) = df_final.shape
         if max_row > 0:
             ws_extrato.add_table(0, 0, max_row, max_col - 1, {
@@ -245,22 +264,35 @@ def gerar_excel_bytes(df_final):
                 'style': 'TableStyleMedium9',
                 'name': 'TabelaExtrato'
             })
+            idx_v_ext = df_final.columns.get_loc('Valor')
             idx_cat = df_final.columns.get_loc('Categoria')
             letra_cat = chr(65 + idx_cat)
+            
+            # Cores Condicionais
             ws_extrato.conditional_format(1, idx_v_ext, max_row, idx_v_ext, {'type': 'formula', 'criteria': f'=${letra_cat}2="Movimentação Interna"', 'format': fmt_neutro})
             ws_extrato.conditional_format(1, idx_v_ext, max_row, idx_v_ext, {'type': 'cell', 'criteria': '<', 'value': 0, 'format': fmt_verm})
             ws_extrato.conditional_format(1, idx_v_ext, max_row, idx_v_ext, {'type': 'cell', 'criteria': '>', 'value': 0, 'format': fmt_verd})
 
+        # --- GRÁFICO ---
         (mr_res, mc_res) = df_resumo.shape
         if mr_res > 0:
+            # Cria a tabela no resumo
             ws_resumo.add_table(0, 0, mr_res, mc_res - 1, {'columns': [{'header': col} for col in df_resumo.columns], 'style': 'TableStyleMedium2'})
+            
             chart = workbook.add_chart({'type': 'pie'})
             chart.add_series({
-                'name': 'Balanço Financeiro',
+                'name': 'Distribuição de Gastos',
                 'categories': ['Resumo Gerencial', 1, 0, mr_res, 0],
                 'values':     ['Resumo Gerencial', 1, 1, mr_res, 1],
-                'data_labels': {'value': True, 'num_format': 'R$ #,##0'},
+                'data_labels': {'value': True, 'num_format': 'R$ #,##0', 'position': 'outside'},
             })
+            
+            # Aumenta o tamanho do gráfico e define título
+            chart.set_title({'name': 'Resumo Financeiro'})
+            chart.set_style(10) # Estilo visual moderno
+            chart.set_size({'width': 600, 'height': 400}) # Tamanho maior em pixels
+            
+            # Insere ao lado da tabela (D2)
             ws_resumo.insert_chart('D2', chart)
 
     output.seek(0)
@@ -341,7 +373,7 @@ def main():
         Antes de processar o extrato, defina as regras no menu à esquerda para o sistema saber como organizar seus gastos.
         
         **A. Tabela de Categorias**
-        * **Coluna Palavra_Chave:** Digite uma parte do nome que aparece no extrato (Ex: `UBER`, `NETFLIX`, `SPOTIFY`).
+        * **Coluna Palavra_Chave:** Digite uma parte do nome que aparece no extrato (Ex: `UBER`, `NETFLIX`, `CARREFOUR`).
         * **Coluna Categoria:** Digite o tipo desse gasto (Ex: `Transporte`, `Assinaturas`, `Mercado`).
         
         **B. Termos Internos (Ignorar)**
@@ -378,7 +410,7 @@ def main():
         💡 **Dicas:**
         * **Prioridade:** O robô busca primeiro por **Termos Internos**, depois **Entradas**, e por fim **Regras de Categoria**.
         * **Comece Simples:** Cadastre apenas os gastos recorrentes (Netflix, Escola, Mercado). O que sobrar como "Outros" no Excel você ajusta manualmente depois.
-        * **Seu Nome:** Cadastre seu nome em **Termos Internos** para não contabilizar as transferências entre contas.
+        * **Seu Nome:** Para não contabilizar transferências entre contas, cadastre seu nome em **Termos Internos**.
         """)
 
     st.info("Arraste seus extratos bancários (OFX) abaixo.")
@@ -400,7 +432,7 @@ def main():
             st.download_button(
                 "📥 Baixar Planilha Excel",
                 data=gerar_excel_bytes(df),
-                file_name=f"Financas_{datetime.now().strftime('%Y-%m-%d')}.xlsx",
+                file_name=f"Relatorio_Financas_{datetime.now().strftime('%d-%m-%Y')}.xlsx",
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 type="primary"
             )
