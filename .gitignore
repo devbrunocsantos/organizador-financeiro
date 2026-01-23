@@ -1,0 +1,23 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.pyc
+
+# Caches
+.streamlit/
+.web/
+
+# Arquivos de ambiente e logs
+.env
+.venv
+env/
+venv/
+*.log
+
+# Arquivos de dados do usuário (NUNCA subir dados bancários)
+*.ofx
+*.json
+config_financeiro.json
+
+# Excel gerados
+*.xlsx
+*.xls
