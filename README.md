@@ -2,6 +2,8 @@
 
 Uma aplicação web desenvolvida em **Python** utilizando o framework **Streamlit**. O objetivo desta ferramenta é simplificar a gestão financeira, principalmente pessoal, permitindo a importação de extratos bancários no formato **OFX** e a conversão automática para planilhas Excel organizadas e categorizadas.
 
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://organizador-financeiro.streamlit.app)
+
 ## ✨ Funcionalidades
 
 - **Importação de OFX:** Suporte para leitura de múltiplos arquivos de extrato bancário simultaneamente.
