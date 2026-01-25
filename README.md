@@ -27,16 +27,20 @@ Uma aplicação web desenvolvida em **Python** utilizando o framework **Streamli
 
 1. Clone o repositório:
    ```bash
-   git clone [https://github.com/seu-usuario/organizador-financeiro-ofx.git](https://github.com/seu-usuario/organizador-financeiro-ofx.git)
-   cd organizador-financeiro-ofx
+   git clone https://github.com/devbrunocsantos/organizador-financeiro.git
    ```
-   
-2. Instale as dependências:
+
+2. Entre na pasta:
+   ```bash
+   cd organizador-financeiro
+   ```
+
+3. Instale as dependências:
    ```bash
    pip install -r requirements.txt
    ```
   
-3. Execute a aplicação:
+4. Execute a aplicação:
    ```bash
    streamlit run app.py
    ```
