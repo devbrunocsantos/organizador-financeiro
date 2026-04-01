@@ -38,7 +38,6 @@ st.markdown("""
 ARQUIVO_CONFIG = "config_financeiro.json"
 
 # --- DADOS INICIAIS ---
-# --- DADOS INICIAIS ---
 DEFAULT_TERMOS_INTERNOS = [
     # Investimentos / Poupança
     {'Termo': 'RESG', 'Tipo': 'Investimento'},
