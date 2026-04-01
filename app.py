@@ -145,7 +145,7 @@ DEFAULT_REGRAS = [
     {'Palavra_Chave': 'PIX ENVIADO', 'Categoria': 'Transferências/PIX'},
     {'Palavra_Chave': 'SALARIO', 'Categoria': 'Renda'},
     {'Palavra_Chave': 'PROVENTOS', 'Categoria': 'Renda'},
-    {'Palavra_Chave': 'PAGTO ELETRON COBRANCA', 'Categoria': 'Renda'}, # Comum em recebimentos
+    {'Palavra_Chave': 'PAGTO ELETRON COBRANCA', 'Categoria': 'Renda'},
     {'Palavra_Chave': 'PIX RECEBIDO', 'Categoria': 'Entradas Diversas'}
 ]
 
@@ -232,7 +232,7 @@ def gerar_excel_bytes(df_final):
         fmt_verd = workbook.add_format({'font_color': '#006100', 'bg_color': '#C6EFCE', 'num_format': 'R$ #,##0.00'})
         fmt_neutro = workbook.add_format({'font_color': '#333333', 'bg_color': '#E0E0E0', 'num_format': 'R$ #,##0.00'})
         
-        # --- AUTO-AJUSTE DAS COLUNAS (ABAS EXTRATO) ---
+        # --- AUTO-AJUSTE DAS COLUNAS (ABA EXTRATO) ---
         for idx, col in enumerate(df_final.columns):
             # Tamanho máximo do texto na coluna
             max_len = df_final[col].astype(str).map(len).max()
@@ -336,7 +336,7 @@ def main():
         mime="application/json"
     )
 
-    # --- TÍTULO E MANUAL (NOVO) ---
+    # --- TÍTULO E MANUAL ---
     st.title("💰 Organizador Financeiro")
     
     # MANUAL
