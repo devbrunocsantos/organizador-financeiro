@@ -27,7 +27,9 @@ st.markdown("""
         color: white;
     }
     /* Estilo específico para o botão de salvar configurações */
-    div[data-testid="stSidebar"] .stButton>button {
+    div[data-testid="stSidebar"] .stButton>button,
+    div[data-testid="stSidebar"] [data-testid="stFormSubmitButton"]>button {
+        width: 100%;
         background-color: #007bff; 
         color: white;
     }
@@ -160,12 +162,21 @@ def carregar_configuracoes(arquivo_json):
         st.error(f"Erro ao carregar arquivo de configuração: {e}")
         return None, None
 
-def categorizar(descricao, valor, df_regras, df_internos):
+def limpar_tabela(df, colunas):
+    """Remove linhas vazias/incompletas e espaços extras das tabelas de configuração."""
+    df = df.copy()
+    for col in colunas:
+        if col not in df.columns:
+            df[col] = None
+    df = df[colunas].dropna(how='any')
+    for col in colunas:
+        df[col] = df[col].astype(str).str.strip()
+    df = df[(df[colunas] != '').all(axis=1)]
+    return df.reset_index(drop=True)
+
+def categorizar(descricao, valor, termos_internos, regras_dict):
     if not descricao: return 'Outros'
     descricao = str(descricao).upper()
-    
-    termos_internos = df_internos['Termo'].str.upper().tolist()
-    regras_dict = dict(zip(df_regras['Palavra_Chave'].str.upper(), df_regras['Categoria']))
 
     for termo in termos_internos:
         if termo in descricao:
@@ -185,9 +196,14 @@ def categorizar(descricao, valor, df_regras, df_internos):
 
 def processar_arquivos(uploaded_files, df_regras, df_internos):
     transacoes = []
+    termos_internos = df_internos['Termo'].str.upper().tolist()
+    regras_dict = dict(zip(df_regras['Palavra_Chave'].str.upper(), df_regras['Categoria']))
+
     for uploaded_file in uploaded_files:
         try:
-            content = uploaded_file.read().decode("ISO-8859-1")
+            # getvalue() lê o conteúdo completo mesmo nas re-execuções do Streamlit
+            # (read() retornaria vazio, pois o ponteiro já estaria no fim do arquivo)
+            content = uploaded_file.getvalue().decode("ISO-8859-1")
             file_obj = io.StringIO(content)
             ofx = OfxParser.parse(file_obj)
             
@@ -195,7 +211,7 @@ def processar_arquivos(uploaded_files, df_regras, df_internos):
                 for t in ofx.account.statement.transactions:
                     valor = float(t.amount)
                     desc = t.memo if t.memo else "Sem Descrição"
-                    cat = categorizar(desc, valor, df_regras, df_internos)
+                    cat = categorizar(desc, valor, termos_internos, regras_dict)
                     
                     tipo_transacao = 'Neutro' if cat == 'Movimentação Interna' else ('Entrada' if valor > 0 else 'Saída')
 
@@ -303,22 +319,52 @@ def main():
 
     config_file = st.sidebar.file_uploader("📂 Carregar Minhas Regras (Opcional)", type=['json'])
     
+    # Configurações SALVAS (as que realmente são usadas no processamento)
     if 'df_regras' not in st.session_state:
         st.session_state['df_regras'] = pd.DataFrame(DEFAULT_REGRAS)
         st.session_state['df_internos'] = pd.DataFrame(DEFAULT_TERMOS_INTERNOS)
-    
-    if config_file is not None:
+    # Versão usada nas chaves dos editores: ao mudar, os editores recomeçam a partir do que foi salvo
+    if 'versao_config' not in st.session_state:
+        st.session_state['versao_config'] = 0
+
+    # Carrega o JSON apenas uma vez por arquivo (senão sobrescreveria as edições a cada interação)
+    if config_file is not None and st.session_state.get('config_carregada') != config_file.file_id:
         regras, internos = carregar_configuracoes(config_file)
         if regras is not None:
-            st.session_state['df_regras'] = regras
-            st.session_state['df_internos'] = internos
+            st.session_state['df_regras'] = limpar_tabela(regras, ['Palavra_Chave', 'Categoria'])
+            st.session_state['df_internos'] = limpar_tabela(internos, ['Termo', 'Tipo'])
+            st.session_state['versao_config'] += 1
+            st.session_state['config_carregada'] = config_file.file_id
             st.sidebar.success("Regras carregadas!")
 
-    with st.sidebar.expander("📝 Editar Regras de Categoria", expanded=False):
-        st.session_state['df_regras'] = st.data_editor(st.session_state['df_regras'], num_rows="dynamic")
+    versao = st.session_state['versao_config']
 
-    with st.sidebar.expander("🔄 Editar Termos Internos", expanded=False):
-        st.session_state['df_internos'] = st.data_editor(st.session_state['df_internos'], num_rows="dynamic")
+    # Edições ficam pendentes dentro do formulário até clicar em "Aplicar Configurações"
+    with st.sidebar.form("form_config"):
+        with st.expander("📝 Editar Regras de Categoria", expanded=False):
+            regras_editadas = st.data_editor(
+                st.session_state['df_regras'], num_rows="dynamic",
+                key=f"editor_regras_{versao}", use_container_width=True
+            )
+
+        with st.expander("🔄 Editar Termos Internos", expanded=False):
+            internos_editados = st.data_editor(
+                st.session_state['df_internos'], num_rows="dynamic",
+                key=f"editor_internos_{versao}", use_container_width=True
+            )
+
+        st.caption("As alterações só passam a valer depois de aplicar.")
+        aplicar = st.form_submit_button("✅ Aplicar Configurações")
+
+    if aplicar:
+        st.session_state['df_regras'] = limpar_tabela(regras_editadas, ['Palavra_Chave', 'Categoria'])
+        st.session_state['df_internos'] = limpar_tabela(internos_editados, ['Termo', 'Tipo'])
+        st.session_state['versao_config'] += 1
+        st.session_state['msg_config'] = True
+        st.rerun()
+
+    if st.session_state.pop('msg_config', False):
+        st.sidebar.success("Configurações aplicadas!")
 
     st.sidebar.markdown("---")
     st.sidebar.write("Gostou das regras? Salve para usar depois:")
@@ -327,10 +373,10 @@ def main():
         'regras': st.session_state['df_regras'].to_dict(orient='records'),
         'internos': st.session_state['df_internos'].to_dict(orient='records')
     }
-    json_bytes = json.dumps(dados_para_salvar, indent=4).encode('utf-8')
+    json_bytes = json.dumps(dados_para_salvar, indent=4, ensure_ascii=False).encode('utf-8')
     
     st.sidebar.download_button(
-        label="💾 Salvar Minhas Regras",
+        label="💾 Baixar Minhas Regras",
         data=json_bytes,
         file_name=ARQUIVO_CONFIG,
         mime="application/json"
@@ -375,6 +421,8 @@ def main():
         * **Coluna Palavra_Chave:** Digite uma parte do nome que aparece no extrato (Ex: `UBER`, `NETFLIX`, `CARREFOUR`).
         * **Coluna Categoria:** Digite o tipo desse gasto (Ex: `Transporte`, `Assinaturas`, `Mercado`).
         
+        ⚠️ Depois de editar, clique em **"✅ Aplicar Configurações"**. Até lá, as mudanças não afetam o relatório.
+
         **B. Termos Internos (Ignorar)**
         * Use esta lista para transações que não são gastos reais (ex: pagamento de fatura de cartão, transferências para poupança, investimentos). O sistema não somará esses valores como entrada ou saída.
         """)
@@ -383,7 +431,7 @@ def main():
         💾 **IMPORTANTE: Salvar suas Regras**
         
         Se você atualizar a página, as regras definidas serão perdidas.
-        1.  Após configurar, clique no botão **"💾 Salvar Minhas Regras"** (menu lateral).
+        1.  Após aplicar as configurações, clique no botão **"💾 Baixar Minhas Regras"** (menu lateral).
         2.  Um arquivo de segurança será baixado.
         3.  Sempre que voltar a usar o sistema, arraste esse arquivo para a área **"📂 Carregar Minhas Regras"** para restaurar tudo.
         """)
